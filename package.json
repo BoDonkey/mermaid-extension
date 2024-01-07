@@ -1,7 +1,7 @@
 {
-  "name": "@apostrophecms/module-template",
+  "name": "mermaid-ecxtension",
   "version": "1.0.0",
-  "description": "A template for creating an ApostropheCMS 3 module.",
+  "description": "An extension to add the Mermaid diagram package to ApostropheCMS",
   "main": "index.js",
   "scripts": {
     "eslint": "eslint --ext .js,.vue .",
@@ -10,23 +10,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/apostrophecms/module-template.git"
+    "url": "git+https://github.com/BoDonkey/mermaid-extension.git"
   },
-  "homepage": "https://github.com/apostrophecms/module-template#readme",
-  "author": "Apostrophe Technologies",
+  "homepage": "https://github.com/BoDonkey/mermaid-extension#readme",
+  "author": "BoDonkey",
   "license": "MIT",
-  "devDependencies": {
-    "apostrophe": "github:apostrophecms/apostrophe",
-    "eslint": "^8.55.0",
-    "eslint-config-apostrophe": "^4.2.0",
-    "eslint-config-standard": "^17.1.0",
-    "eslint-plugin-import": "^2.29.0",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^6.1.1",
-    "eslint-plugin-vue": "^9.19.2",
-    "mocha": "^10.2.0",
-    "stylelint": "^15.11.0",
-    "stylelint-config-apostrophe": "^3.0.0",
-    "vue-eslint-parser": "^9.3.2"
+  "dependencies": {
+    "ace-builds": "^1.32.3",
+    "mermaid": "^10.6.1"
   }
 }

@@ -1,5 +1,5 @@
 {
-  "name": "mermaid-ecxtension",
+  "name": "mermaid-extension",
   "version": "1.0.0",
   "description": "An extension to add the Mermaid diagram package to ApostropheCMS",
   "main": "index.js",

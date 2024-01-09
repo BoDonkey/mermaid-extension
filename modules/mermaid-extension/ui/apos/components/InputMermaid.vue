@@ -72,7 +72,7 @@ export default {
       const mermaidContainer = document.getElementById('mermaidOutput');
 
       // Wrap the mermaid code in <pre class="mermaid">
-      mermaidContainer.innerHTML = `<pre class="mermaid vue-mermaid" style="background: #fff; width: 100%;">${mermaidCode}</pre>`;
+      mermaidContainer.innerHTML = `<pre class="mermaid vue-mermaid">${mermaidCode}</pre>`;
 
       // Reinitialize mermaid to process the new diagram
       await mermaid.run({

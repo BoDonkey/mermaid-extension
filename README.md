@@ -31,4 +31,22 @@ require('apostrophe')({
 });
 ```
 
-The widget can then be added to any area in the `widget` property.
+The widget can then be added to any area in the `widgets` property.
+
+```javascript
+//...
+fields: {
+    add: {
+      main: {
+        type: 'area',
+        options: {
+          widgets: {
+            '@apostrophecms/rich-text': {},
+            '@apostrophecms/image': {},
+            '@apostrophecms/video': {},
+            'mermaid': {}
+          }
+        }
+      }
+    }
+//...

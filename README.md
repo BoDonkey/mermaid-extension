@@ -7,7 +7,7 @@
       <img alt="" src="https://img.shields.io/static/v1?style=for-the-badge&labelColor=000000&label=License&message=MIT&color=3DA639">
     </a>
   </p>
-This module adds the Mermaid Diagram package for use in an ApostropheCMS project. This package allows for the addition of a number of different diagrams as outlined in the [package documentation](https://mermaid.js.org/).
+This module adds the Mermaid Diagram package for use in an ApostropheCMS project. This package allows for the addition of several different diagrams as outlined in the [Mermaid documentation](https://mermaid.js.org).
 
 ## Installation
 
@@ -19,11 +19,12 @@ npm install https://github.com/BoDonkey/mermaid-extension.git
 
 ## Usage
 
-Add the mermaid-widget extension module in the `app.js` file:
+Add the mermaid-extension bundle and widget module in the `app.js` file:
 
 ```javascript
 require('apostrophe')({
   shortName: 'my-project',
+  bundles: [ 'mermaid-extension' ],
   modules: {
     'mermaid-widget': {}
   }

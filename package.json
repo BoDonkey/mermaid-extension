@@ -18,13 +18,5 @@
   "dependencies": {
     "ace-builds": "^1.32.3",
     "mermaid": "^10.6.1"
-  },
-  "bugs": {
-    "url": "https://github.com/BoDonkey/mermaid-extension/issues"
-  },
-  "devDependencies": {},
-  "keywords": [
-    "mermaid",
-    "ApostropheCMS"
-  ]
+  }
 }

@@ -1,5 +1,5 @@
 {
-  "name": "mermaid-extension",
+  "name": "@bodonkey/mermaid-extension",
   "version": "1.0.0",
   "description": "An extension to add the Mermaid diagram package to ApostropheCMS",
   "main": "index.js",
@@ -13,10 +13,18 @@
     "url": "git+https://github.com/BoDonkey/mermaid-extension.git"
   },
   "homepage": "https://github.com/BoDonkey/mermaid-extension#readme",
-  "author": "BoDonkey",
+  "author": "BoDonkey <robert@robertmeans.net>",
   "license": "MIT",
   "dependencies": {
     "ace-builds": "^1.32.3",
     "mermaid": "^10.6.1"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/BoDonkey/mermaid-extension/issues"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "mermaid",
+    "ApostropheCMS"
+  ]
 }

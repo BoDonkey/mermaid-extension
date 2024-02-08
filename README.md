@@ -54,6 +54,7 @@ fields: {
 ```
 
 ![Screen shot of a simple pie chart made with the mermaid extension](./images/pie-chart.png)
+
 Selecting the mermaid widget in an area will bring up a modal containing a code editor for you to input the code for your diagram. After adding code you can test the results by clicking the 'Render Diagram' button. Note that the width of the modal prevents the display of the legend in the preview.
 
 You can customize your diagrams by passing configuration in the diagram front matter. For example:

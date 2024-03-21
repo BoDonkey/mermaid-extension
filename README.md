@@ -25,7 +25,7 @@ Add the mermaid-extension bundle and widget module in the `app.js` file:
 ```javascript
 require('apostrophe')({
   shortName: 'my-project',
-  bundles: [ 'mermaid-extension' ],
+  bundles: [ '@bodonkey/mermaid-extension' ],
   modules: {
     'mermaid-widget': {}
   }

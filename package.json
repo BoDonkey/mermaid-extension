@@ -52,7 +52,7 @@
     "mermaid": "^10.6.1"
   },
   "peerDependencies": {
-    "apostrophe": "^3.0.0"
+    "apostrophe": "^4.0.0"
   },
   "peerDependenciesMeta": {
     "apostrophe": {

@@ -18,62 +18,16 @@ const placeholder = widget?.aposPlaceholder;
 </div>
 
 <script>
-  class MermaidWidget extends HTMLElement {
-    constructor() {
-      super();
-      this.rendered = false;
-    }
+  // Simple approach - just like your original widget player
+  import('mermaid').then(async ({ default: mermaid }) => {
+    mermaid.initialize({ startOnLoad: false });
 
-    connectedCallback() {
-      if (!this.rendered) {
-        this.init();
-      }
-    }
-
-    async init() {
-      try {
-        // Import mermaid dynamically to avoid SSR issues
-        const { default: mermaid } = await import('mermaid');
-
-        // Initialize mermaid with safe defaults
-        mermaid.initialize({ 
-          startOnLoad: false,
-          theme: 'default',
-          securityLevel: 'loose' // Allows for more complex diagrams
-        });
-
-        // Find and render the mermaid diagram
-        const mermaidElement = this.querySelector('.mermaid');
-        if (mermaidElement && mermaidElement.textContent.trim()) {
-          // Generate a unique ID for this diagram
-          const id = `mermaid-${Math.random().toString(36).substr(2, 9)}`;
-
-          try {
-            const { svg } = await mermaid.render(id, mermaidElement.textContent);
-            mermaidElement.innerHTML = svg;
-            this.rendered = true;
-          } catch (error) {
-            console.error('Mermaid rendering error:', error);
-            mermaidElement.innerHTML = `
-              <div style="color: red; padding: 1rem;">
-                <strong>Mermaid Error:</strong><br>
-                <code>${error.message}</code>
-              </div>
-            `;
-          }
-        }
-      } catch (error) {
-        console.error('Failed to load Mermaid:', error);
-      }
-    }
-  }
-
-  // Define the custom element
-  if (!customElements.get('mermaid-widget')) {
-    customElements.define('mermaid-widget', MermaidWidget);
-  }
+    // Run mermaid on all .mermaid elements
+    await mermaid.run({
+      nodes: document.querySelectorAll('.mermaid')
+    });
+  });
 </script>
-
 
 <style>
   .mermaid-container {

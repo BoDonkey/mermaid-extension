@@ -1,0 +1,99 @@
+---
+const { widget } = Astro.props;
+const mermaidCode = widget?.mermaid || '';
+const placeholder = widget?.aposPlaceholder;
+---
+
+<div class="mermaid-container">
+  {placeholder ? (
+    <div class="mermaid-placeholder">
+      <p>📊 Mermaid diagram placeholder</p>
+      <p>Click the edit button to add your diagram</p>
+    </div>
+  ) : (
+    <mermaid-widget code={mermaidCode}>
+      <pre class="mermaid">{mermaidCode}</pre>
+    </mermaid-widget>
+  )}
+</div>
+
+<script>
+  class MermaidWidget extends HTMLElement {
+    constructor() {
+      super();
+      this.rendered = false;
+    }
+
+    connectedCallback() {
+      if (!this.rendered) {
+        this.init();
+      }
+    }
+
+    async init() {
+      try {
+        // Import mermaid dynamically to avoid SSR issues
+        const { default: mermaid } = await import('mermaid');
+
+        // Initialize mermaid with safe defaults
+        mermaid.initialize({ 
+          startOnLoad: false,
+          theme: 'default',
+          securityLevel: 'loose' // Allows for more complex diagrams
+        });
+
+        // Find and render the mermaid diagram
+        const mermaidElement = this.querySelector('.mermaid');
+        if (mermaidElement && mermaidElement.textContent.trim()) {
+          // Generate a unique ID for this diagram
+          const id = `mermaid-${Math.random().toString(36).substr(2, 9)}`;
+
+          try {
+            const { svg } = await mermaid.render(id, mermaidElement.textContent);
+            mermaidElement.innerHTML = svg;
+            this.rendered = true;
+          } catch (error) {
+            console.error('Mermaid rendering error:', error);
+            mermaidElement.innerHTML = `
+              <div style="color: red; padding: 1rem;">
+                <strong>Mermaid Error:</strong><br>
+                <code>${error.message}</code>
+              </div>
+            `;
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load Mermaid:', error);
+      }
+    }
+  }
+
+  // Define the custom element
+  if (!customElements.get('mermaid-widget')) {
+    customElements.define('mermaid-widget', MermaidWidget);
+  }
+</script>
+
+
+<style>
+  .mermaid-container {
+    width: 100%;
+    margin: 1rem 0;
+  }
+  pre.mermaid {
+    display: block;
+    background: #fff;
+    width: 100%;
+    border: 1px solid #ddd;
+    padding: 1rem;
+    border-radius: 4px;
+  }
+  .mermaid-placeholder {
+    padding: 2rem;
+    text-align: center;
+    background: #f5f5f5;
+    border: 2px dashed #ccc;
+    border-radius: 4px;
+    color: #666;
+  }
+</style>

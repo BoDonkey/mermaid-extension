@@ -51,14 +51,6 @@
     "ace-builds": "^1.32.3",
     "mermaid": "^11.9.0"
   },
-  "peerDependencies": {
-    "apostrophe": "^4.0.0"
-  },
-  "peerDependenciesMeta": {
-    "apostrophe": {
-      "optional": false
-    }
-  },
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=8.0.0"

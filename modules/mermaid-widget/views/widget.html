@@ -1,5 +1,5 @@
-<section data-mermaid-widget>
-<pre class="mermaid">
-  {{ data.widget.mermaid }}
-</pre>
-</section>
+{% if data.widget.mermaid %}
+<div data-mermaid-widget>
+  <div class="mermaid">{{ data.widget.mermaid }}</div>
+</div>
+{% endif %}

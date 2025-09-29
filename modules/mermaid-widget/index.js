@@ -12,6 +12,11 @@ module.exports = {
         type: "mermaidField",
         label: "Mermaid",
         help: "Enter your mermaid code here",
+        def: `graph TD
+    A[Start] --> B{Is it working?}
+    B -->|Yes| C[Great!]
+    B -->|No| D[Check the code]
+    D --> A`
       },
     },
     group: {
@@ -36,8 +41,11 @@ module.exports = {
           if (field.required) {
             throw self.apos.error("notfound");
           }
+          // Use the default value if provided and input is empty
+          object[field.name] = field.def || "";
+        } else {
+          object[field.name] = self.apos.launder.string(input, field.def);
         }
-        object[field.name] = self.apos.launder.string(input, field.def);
       },
     };
   },

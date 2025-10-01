@@ -3,11 +3,18 @@
     :display-options="displayOptions">
     <template #body>
       <div>
-        <h2>Mermaid Diagram</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <h2 style="margin: 0;">Mermaid Diagram</h2>
+          <a href="https://mermaid.js.org/intro/" target="_blank" rel="noopener noreferrer"
+            style="font-size: 14px; text-decoration: none; color: #0066cc;">
+            📖 Mermaid Docs
+          </a>
+        </div>
         <div id="preview-editor" ref="editor"></div>
+        <!-- Remove this validation error box -->
         <button @click="renderDiagram">Render Diagram</button>
         <button @click="clearDiagram">Clear</button>
-        <div id="mermaidOutput"></div>
+        <div id="mermaidOutput" ref="mermaidOutput"></div>
       </div>
     </template>
   </AposInputWrapper>
@@ -26,12 +33,11 @@ export default {
   data() {
     return {
       editor: null,
+      hasValidationError: false,
+      validationErrorMessage: ''
     };
   },
   mounted() {
-    // Debug: Log the modelValue to see its structure
-    console.log('Mermaid widget modelValue:', this.modelValue, typeof this.modelValue);
-    
     this.editor = ace.edit(this.$refs.editor, {
       minLines: 10,
       fontSize: 14,
@@ -40,33 +46,42 @@ export default {
     this.editor.session.setMode("ace/mode/plain_text");
     this.editor.setTheme("ace/theme/monokai");
 
-    // Set the editor's value to the existing value from the database
-    // Handle different possible value formats
-    let initialValue = '';
-    if (this.modelValue) {
-      if (typeof this.modelValue === 'string') {
-        initialValue = this.modelValue;
-      } else if (typeof this.modelValue === 'object' && this.modelValue.data) {
-        initialValue = this.modelValue.data;
-      } else if (typeof this.modelValue === 'object' && this.modelValue !== null) {
-        // Try to stringify if it's an object but not the expected format
-        console.warn('Unexpected modelValue format:', this.modelValue);
-        initialValue = JSON.stringify(this.modelValue, null, 2);
+    this.editor.setOption("enableAutoIndent", true);
+
+    this.editor.commands.addCommand({
+      name: 'smartEnter',
+      bindKey: { win: 'Return', mac: 'Return' },
+      exec: function(editor) {
+        const cursorPosition = editor.getCursorPosition();
+        const line = editor.session.getLine(cursorPosition.row);
+        const indent = line.match(/^\s*/)[0];
+        editor.insert('\n' + indent);
       }
-    }
-    
-    // Only set value if we have a valid string
-    if (typeof initialValue === 'string') {
-      this.editor.setValue(initialValue);
-      this.editor.clearSelection(); // Clear selection after setting value
+    });
+
+    // Use this.next which the mixin sets up for you
+    if (this.next) {
+      this.editor.setValue(this.next);
+      this.editor.clearSelection();
     }
 
-    // Update Apostrophe data on editor change
+    // Update this.next on editor change - the mixin's watcher will handle the emit
+    let validationTimeout;
     this.editor.getSession().on('change', () => {
-      this.update(this.editor.getValue());
+      const value = this.editor.getValue();
+      // ✅ Just update this.next - the mixin handles the emit via its watcher
+      this.next = value;
+
+      clearTimeout(validationTimeout);
+      validationTimeout = setTimeout(() => {
+        this.validateMermaidSyntax(value);
+      }, 500);
     });
-    
-    mermaid.initialize({ startOnLoad: false });
+
+    mermaid.initialize({
+      startOnLoad: false,
+      suppressErrorRendering: true
+    });
   },
   methods: {
     validate(value) {
@@ -75,36 +90,93 @@ export default {
           return 'required';
         }
       }
+
+      if (this.hasValidationError) {
+        return this.validationErrorMessage;
+      }
+
       return false;
     },
-    update(value) {
-      // Update the ApostropheCMS data using the proper method
-      this.$emit('update:modelValue', value);
-      this.next = value;
+    async validateMermaidSyntax(value) {
+      if (!value || value.trim() === '') {
+        this.hasValidationError = false;
+        this.validationErrorMessage = '';
+        return;
+      }
+
+      try {
+        await mermaid.parse(value);
+        this.hasValidationError = false;
+        this.validationErrorMessage = '';
+      } catch (e) {
+        this.hasValidationError = true;
+        this.validationErrorMessage = 'Invalid Mermaid syntax. Please fix errors before saving.';
+      }
     },
+    // ❌ Remove this method entirely - let the mixin handle it
+    // update(value) {
+    //   this.$emit('update:modelValue', value);
+    //   this.next = value;
+    // },
+    
     async renderDiagram() {
       const mermaidCode = this.editor.getValue();
-      const mermaidContainer = document.getElementById('mermaidOutput');
+      const mermaidContainer = this.$refs.mermaidOutput;
 
-      // Clear previous diagram
       mermaidContainer.innerHTML = '';
 
       try {
-        // Generate unique ID for this diagram
         const diagramId = 'mermaid-' + Math.random().toString(36).substr(2, 9);
-        
-        // Use mermaid's render method (newer API)
         const { svg } = await mermaid.render(diagramId, mermaidCode);
-        mermaidContainer.innerHTML = svg;
+
+        if (svg.includes('Syntax error') || svg.includes('Parse error')) {
+          mermaidContainer.innerHTML = `
+            <div style="color: #d32f2f; background: #ffebee; border: 1px solid #ef5350; 
+                        border-radius: 4px; padding: 12px; margin-top: 10px;">
+              <strong>⚠️ Syntax Error</strong><br>
+              There's an error in your Mermaid diagram syntax. Please check the 
+              <a href="https://mermaid.js.org/intro/" target="_blank" rel="noopener noreferrer">documentation</a>
+              for correct syntax.
+            </div>
+          `;
+        } else {
+          mermaidContainer.innerHTML = svg;
+        }
+
+        this.cleanupOrphanedErrorSvgs();
+
       } catch (error) {
-        console.error('Mermaid rendering error:', error);
-        mermaidContainer.innerHTML = `<div style="color: red;">Error rendering diagram: ${error.message}</div>`;
+        mermaidContainer.innerHTML = `
+          <div style="color: #d32f2f; background: #ffebee; border: 1px solid #ef5350;
+                      border-radius: 4px; padding: 12px; margin-top: 10px;">
+            <strong>⚠️ Rendering Error</strong><br>
+            ${this.sanitizeErrorMessage(error.message)}
+          </div>
+        `;
+
+        this.cleanupOrphanedErrorSvgs();
       }
     },
     clearDiagram() {
       this.editor.setValue('');
       this.editor.clearSelection();
-      document.getElementById('mermaidOutput').innerHTML = '';
+      this.$refs.mermaidOutput.innerHTML = '';
+      this.cleanupOrphanedErrorSvgs();
+    },
+    cleanupOrphanedErrorSvgs() {
+      setTimeout(() => {
+        document.querySelectorAll('svg[id^="d"], svg[id^="mermaid-"]').forEach(svg => {
+          const text = svg.querySelector('text')?.textContent || '';
+          if (text.includes('Syntax error') || text.includes('Parse error')) {
+            if (!this.$refs.mermaidOutput.contains(svg)) {
+              svg.remove();
+            }
+          }
+        });
+      }, 100);
+    },
+    sanitizeErrorMessage(message) {
+      return message.replace(/<[^>]*>/g, '').substring(0, 200);
     }
   }
 }
@@ -117,6 +189,21 @@ export default {
 
 button {
   margin: 10px 10px 10px 0;
+  padding: 8px 16px;
+  background: #0066cc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+button:hover {
+  background: #0052a3;
+}
+
+button:active {
+  background: #003d7a;
 }
 
 #mermaidOutput {
@@ -124,5 +211,7 @@ button {
   border: 1px solid #ccc;
   padding: 10px;
   min-height: 100px;
+  border-radius: 4px;
+  background: #fafafa;
 }
 </style>

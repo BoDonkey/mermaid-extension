@@ -40,11 +40,7 @@ apostrophe ({
 ```
 
 ### For Astro + ApostropheCMS Projects
-
-**Backend (ApostropheCMS):**
-```bash
-npm install @bodonkey/mermaid-extension
-```
+Follow all the steps to install in the `backend` folder like a traditional project. Then in the `frontend`
 
 **Frontend (Astro):**
 ```bash
@@ -53,7 +49,7 @@ npm install @bodonkey/mermaid-extension
 
 ```javascript
 // src/widgets/index.js
-import { MermaidWidget } from '@bodonkey/mermaid-extension/astro';
+import MermaidWidget from '@bodonkey/mermaid-extension/astro/MermaidWidget.astro';
 
 const widgetComponents = {
   'mermaid': MermaidWidget,
@@ -62,58 +58,6 @@ const widgetComponents = {
 
 export default widgetComponents;
 ```
-
-## 🎨 What Can You Create?
-
-### Flowcharts
-```mermaid
-flowchart TD
-    A[Start Your Project] --> B{Choose Your Path}
-    B -->|Traditional| C[ApostropheCMS Only]
-    B -->|Modern| D[ApostropheCMS + Astro]
-    C --> E[Add Mermaid Widget]
-    D --> E
-    E --> F[Create Amazing Diagrams! 🎉]
-```
-
-### Sequence Diagrams
-```mermaid
-sequenceDiagram
-    participant User
-    participant Astro
-    participant ApostropheCMS
-    
-    User->>Astro: Visit page
-    Astro->>ApostropheCMS: Fetch content
-    ApostropheCMS-->>Astro: Return data + widgets
-    Astro-->>User: Render beautiful page
-```
-
-### Mind Maps
-```mermaid
-mindmap
-  root)ApostropheCMS(
-    (Traditional)
-      Nunjucks
-      Server-side
-    (Modern)
-      Astro
-      React
-      Vue
-      Svelte
-    (Features)
-      Mermaid Diagrams
-      Rich Content
-      Easy Editing
-```
-
-### And So Much More!
-- 📊 **Pie Charts** - Perfect for data visualization
-- 🗺️ **User Journey Maps** - Map out user experiences  
-- 📈 **Gantt Charts** - Project timelines made easy
-- 🏗️ **Architecture Diagrams** - System design visualization
-- 🌳 **Git Graphs** - Show branching strategies
-
 ## 🛠️ Usage
 
 Add the widget to any area in your page or piece types:
@@ -135,6 +79,63 @@ fields: {
 }
 ```
 
+### 📊 Creating Diagrams
+![The Mermaid editor with pie chart rendered](./images/pie-chart.png)
+Selecting the mermaid widget in an area will bring up a modal containing a code editor for you to input the code for your diagram. After adding code you can test the results by clicking the 'Render Diagram' button. Note that the width of the modal prevents the display of the legend in the preview.
+
+### 🎨 What Can You Create?
+
+#### Flowcharts
+```mermaid
+flowchart TD
+    A[Start Your Project] --> B{Choose Your Path}
+    B -->|Traditional| C[ApostropheCMS Only]
+    B -->|Modern| D[ApostropheCMS + Astro]
+    C --> E[Add Mermaid Widget]
+    D --> E
+    E --> F[Create Amazing Diagrams! 🎉]
+```
+
+#### Sequence Diagrams
+```mermaid
+sequenceDiagram
+    participant User
+    participant Astro
+    participant ApostropheCMS
+    
+    User->>Astro: Visit page
+    Astro->>ApostropheCMS: Fetch content
+    ApostropheCMS-->>Astro: Return data + widgets
+    Astro-->>User: Render beautiful page
+```
+
+#### Mind Maps
+```mermaid
+mindmap
+  root)ApostropheCMS(
+    (Traditional)
+      Nunjucks
+      Server-side
+    (Modern)
+      Astro
+      React
+      Vue
+      Svelte
+    (Features)
+      Mermaid Diagrams
+      Rich Content
+      Easy Editing
+```
+
+#### And So Much More!
+- 📊 **Pie Charts** - Perfect for data visualization
+- 🗺️ **User Journey Maps** - Map out user experiences  
+- 📈 **Gantt Charts** - Project timelines made easy
+- 🏗️ **Architecture Diagrams** - System design visualization
+- 🌳 **Git Graphs** - Show branching strategies
+
+You can read more about diagram types in the [Mermaid documentation](https://mermaid.js.org).
+
 ## 🎨 Customization Magic
 
 Make your diagrams uniquely yours with custom themes:
@@ -155,6 +156,7 @@ flowchart LR
     B --> C[Build]
     C --> D[Ship! 🚀]
 ```
+You can read more about configuration options in the [Mermaid documentation](https://mermaid.js.org).
 
 ## 🌟 Pro Tips
 
@@ -162,16 +164,7 @@ flowchart LR
 2. **Start Simple** - Begin with basic flowcharts, then explore advanced features
 3. **Theme Consistently** - Use the same color scheme across your diagrams
 4. **Mobile-Friendly** - Test how your diagrams look on different screen sizes
-5. **Documentation** - Keep the [Mermaid docs](https://mermaid.js.org) handy for reference
-
-## 🔧 Astro Integration Details
-
-The Astro component handles:
-- ✅ Server-side rendering compatibility
-- ✅ Dynamic imports for optimal performance  
-- ✅ Error handling for malformed diagrams
-- ✅ Placeholder support for empty widgets
-- ✅ Hot reloading during development
+5. **Documentation** - Keep the [Mermaid docs](https://mermaid.js.org) handy for reference (or you can open it from the link in the editor).
 
 ## 🤝 Contributing
 
@@ -185,17 +178,18 @@ Found a bug? Have an idea for improvement? We'd love to hear from you!
 ## 📚 Learn More
 
 - [Mermaid Documentation](https://mermaid.js.org) - Complete diagram syntax reference
-- [ApostropheCMS Docs](https://v3.docs.apostrophecms.org) - Learn more about the CMS
+- [ApostropheCMS Docs](https://docs.apostrophecms.org) - Learn more about the CMS
 - [Astro Docs](https://docs.astro.build) - Modern frontend framework
-- [Demo Gallery](#) - See real examples in action
 
 ## 📄 License
 
-MIT License - Use it anywhere, build amazing things! 
+MIT License - Use it anywhere, build amazing things!
 
 ---
 
 <div align="center">
   <strong>Ready to make your content more visual and engaging?</strong><br>
-  <code>npm install @bodonkey/mermaid-extension</code>
+  <code>npm install @bodonkey/mermaid-extension</code><br>
+  🐴 Made with hoofy tip-taps by BoDonkey.<br>
+  If you find this module helpful, please consider giving it a ⭐ on <a href="https://github.com/BoDonkey/mermaid-extension">GitHub!</a>
 </div>

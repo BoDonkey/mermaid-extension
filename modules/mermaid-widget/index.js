@@ -2,6 +2,10 @@ module.exports = {
   extend: "@apostrophecms/widget-type",
   options: {
     label: "Mermaid Widget",
+    icon: 'chart-icon'
+  },
+  icons: {
+    'chart-icon': 'chartBar'
   },
   init(self) {
     self.addMermaidFieldType();
@@ -18,13 +22,7 @@ module.exports = {
     B -->|No| D[Check the code]
     D --> A`
       },
-    },
-    group: {
-      basics: {
-        label: "Basics",
-        fields: ["mermaid"],
-      },
-    },
+    }
   },
   methods(self) {
     return {

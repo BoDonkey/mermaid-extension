@@ -24,18 +24,18 @@ export default () => {
     player: async function (el) {
       // Wait for mermaid to be ready
       await readyPromise;
-      
+
       const target = el.querySelector('.mermaid');
       if (!target || target.dataset.rendered) return;
-      
+
       try {
         // Hide content initially to prevent flash
         target.style.visibility = 'hidden';
-        
+
         // Render this specific diagram
         const id = 'mermaid-' + Math.random().toString(36).substr(2, 9);
         const mermaidCode = target.textContent.trim();
-        
+
         const { svg } = await window.mermaid.render(id, mermaidCode);
         target.innerHTML = svg;
         target.style.visibility = 'visible';

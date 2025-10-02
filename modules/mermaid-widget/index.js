@@ -16,11 +16,8 @@ module.exports = {
         type: "mermaidField",
         label: "Mermaid",
         help: "Enter your mermaid code here",
-        def: `graph TD
-    A[Start] --> B{Is it working?}
-    B -->|Yes| C[Great!]
-    B -->|No| D[Check the code]
-    D --> A`
+        def:  `graph TD
+    A[Add your Mermaid diagram here]`
       },
     }
   },

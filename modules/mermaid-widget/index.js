@@ -2,7 +2,8 @@ module.exports = {
   extend: "@apostrophecms/widget-type",
   options: {
     label: "Mermaid Widget",
-    icon: 'chart-icon'
+    icon: 'chart-icon',
+    preview: false
   },
   icons: {
     'chart-icon': 'chartBar'

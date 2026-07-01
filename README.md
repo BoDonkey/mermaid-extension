@@ -34,7 +34,11 @@ apostrophe ({
   shortName: 'my-project',
   bundles: [ '@bodonkey/mermaid-extension' ],
   modules: {
-    'mermaid-widget': {}
+    'mermaid-widget': {
+      options: {
+        initBlock: '%%{init: { "theme": "base" }}%%'
+      }
+    }
   }
 });
 ```
@@ -58,6 +62,20 @@ const widgetComponents = {
 
 export default widgetComponents;
 ```
+
+For Astro frontends, pass the same shared init block through a small wrapper component:
+
+```astro
+---
+import MermaidWidget from '@bodonkey/mermaid-extension/astro/MermaidWidget.astro';
+
+const initBlock = '%%{init: { "theme": "base" }}%%';
+---
+
+<MermaidWidget {...Astro.props} initBlock={initBlock} />
+```
+
+Then map your wrapper component in `src/widgets/index.js`.
 ## 🛠️ Usage
 
 Add the widget to any area in your page or piece types:
@@ -81,7 +99,22 @@ fields: {
 
 ### 📊 Creating Diagrams
 ![The Mermaid editor with pie chart rendered](./images/pie-chart.png)
-Selecting the mermaid widget in an area will bring up a modal containing a code editor for you to input the code for your diagram. After adding code you can test the results by clicking the 'Render Diagram' button. Note that the width of the modal prevents the display of the legend in the preview.
+Selecting the mermaid widget in an area will bring up a modal containing a code editor for you to input the code for your diagram. You can also add an optional caption, which renders as a `<figcaption>`. After adding code you can test the results by clicking the 'Render Diagram' button. Note that the width of the modal prevents the display of the legend in the preview.
+
+Rendered diagrams use semantic figure markup:
+
+```html
+<figure class="mermaid-widget">
+  <div class="mermaid-widget__canvas">
+    <!-- rendered SVG -->
+  </div>
+  <figcaption class="mermaid-widget__caption">Optional caption</figcaption>
+</figure>
+```
+
+#### Upgrade note
+
+If you styled earlier versions with selectors like `[data-mermaid-widget] > .mermaid`, update those selectors to use `.mermaid-widget`, `.mermaid-widget__canvas`, or `.mermaid-widget__caption`.
 
 ### 🎨 What Can You Create?
 
@@ -157,6 +190,26 @@ flowchart LR
     C --> D[Ship! 🚀]
 ```
 You can read more about configuration options in the [Mermaid documentation](https://mermaid.js.org).
+
+### Shared Mermaid Init
+
+Set `initBlock` on the `mermaid-widget` module to apply the same Mermaid directive to every diagram. The directive is prepended only while rendering, so editors do not have to repeat it in every widget.
+
+```javascript
+'mermaid-widget': {
+  options: {
+    initBlock: `%%{init: {
+      "theme": "base",
+      "themeVariables": {
+        "primaryColor": "#6516dd",
+        "primaryTextColor": "#ffffff"
+      }
+    }}%%`
+  }
+}
+```
+
+If a diagram starts with its own Mermaid directive (`%%{...}%%`) or YAML frontmatter (`---`), that diagram keeps its own configuration.
 
 ## 🌟 Pro Tips
 

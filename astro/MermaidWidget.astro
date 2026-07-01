@@ -1,65 +1,71 @@
 ---
 /**
  * Props:
- *  - code: string (the Mermaid definition, e.g., "graph TD; A-->B;")
- *  - class (optional): string
- *  - style (optional): string
+ *  - widget: Apostrophe widget data, including mermaid and optional caption
+ *  - initBlock: Mermaid directive prepended when the diagram has no directive
  */
-const { widget } = Astro.props;
+const { widget, initBlock = '' } = Astro.props;
 const uniqueId = `mermaid-widget-${Math.random().toString(36).slice(2)}`;
 ---
 
-<div data-mermaid-widget data-widget-id={uniqueId}>
+<figure class="mermaid-widget" data-mermaid-widget data-widget-id={uniqueId} data-mermaid-init={initBlock}>
   <!-- Keep raw source hidden; render SVG into .mermaid-target -->
   <pre class="mermaid-code" style="display:none;">{widget.mermaid}</pre>
-  <div class="mermaid-target" aria-live="polite"></div>
-</div>
+  <div class="mermaid-widget__canvas">
+    <div class="mermaid-target" aria-live="polite"></div>
+  </div>
+  {widget.caption && (
+    <figcaption class="mermaid-widget__caption">{widget.caption}</figcaption>
+  )}
+</figure>
 
 <script>
-  /**
-   * Manages Mermaid diagram rendering for a single widget instance
-   */
-  class MermaidWidget {
+  class MermaidWidgetRenderer {
     constructor(container) {
       this.container = container;
       this.widgetId = container.dataset.widgetId;
       this.target = container.querySelector('.mermaid-target');
       this.codeEl = container.querySelector('.mermaid-code');
       this.rendered = false;
-      this.CDN = 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js';
+      this.CDN = 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js';
     }
 
     async ensureMermaid() {
-      if (window.mermaid) return Promise.resolve();
-      return new Promise((resolve, reject) => {
-        const s = document.createElement('script');
-        s.src = this.CDN;
-        s.async = true;
-        s.onload = () => {
-          window.mermaid.initialize({
-            startOnLoad: false,
-            securityLevel: 'loose',
-            theme: 'default'
-          });
-          resolve();
-        };
-        s.onerror = (e) => reject(e);
-        document.head.appendChild(s);
-      });
+      if (window.mermaid) return window.mermaid;
+
+      if (!window.__mermaidWidgetLoader) {
+        window.__mermaidWidgetLoader = new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = this.CDN;
+          s.async = true;
+          s.onload = () => {
+            window.mermaid.initialize({
+              startOnLoad: false,
+              securityLevel: 'loose',
+              theme: 'default'
+            });
+            resolve(window.mermaid);
+          };
+          s.onerror = (e) => reject(e);
+          document.head.appendChild(s);
+        });
+      }
+
+      return window.__mermaidWidgetLoader;
     }
 
     async render() {
       if (this.rendered) return;
 
       try {
-        await this.ensureMermaid();
+        const mermaid = await this.ensureMermaid();
         
         this.target.style.visibility = 'hidden';
         const id = 'mermaid-' + Math.random().toString(36).slice(2);
-        const src = (this.codeEl.textContent || '').trim();
+        const src = this.applyInitBlock(this.codeEl.textContent || '');
 
         // Render to a temporary container to catch error SVGs
-        const { svg } = await window.mermaid.render(id, src);
+        const { svg } = await mermaid.render(id, src);
         
         // Check if the SVG contains error indicators
         if (svg.includes('Syntax error') || svg.includes('Parse error')) {
@@ -93,18 +99,28 @@ const uniqueId = `mermaid-widget-${Math.random().toString(36).slice(2)}`;
     destroy() {
       this.rendered = false;
     }
+
+    applyInitBlock(source) {
+      const code = source.trim();
+      const init = (this.container.dataset.mermaidInit || '').trim();
+
+      if (!init || code.startsWith('%%{') || code.startsWith('---')) {
+        return code;
+      }
+
+      return `${init}\n${code}`;
+    }
   }
 
-  const mermaidWidgets = new Map();
-
-  // Call once now (in case we're on a static page / in-context editing)
-  queueMicrotask(initMermaidWidgets);
+  const mermaidWidgets = window.__mermaidWidgets || new Map();
+  window.__mermaidWidgets = mermaidWidgets;
 
   // Make init idempotent & debounced (DOM can churn a lot in the modal)
-  let initTimer = null;
+  let initTimer = window.__mermaidWidgetInitTimer || null;
   function scheduleInit(delay = 50) {
     if (initTimer) clearTimeout(initTimer);
     initTimer = setTimeout(initMermaidWidgets, delay);
+    window.__mermaidWidgetInitTimer = initTimer;
   }
 
   function initMermaidWidgets() {
@@ -116,35 +132,52 @@ const uniqueId = `mermaid-widget-${Math.random().toString(36).slice(2)}`;
     document.querySelectorAll('[data-mermaid-widget]').forEach(container => {
       const widgetId = container.dataset.widgetId;
       if (!widgetId) return;
-      const w = new MermaidWidget(container);
+      const w = new MermaidWidgetRenderer(container);
       mermaidWidgets.set(widgetId, w);
       w.render();
     });
   }
 
-  const mo = new MutationObserver((mutations) => {
-    for (const m of mutations) {
-      // If any mutation added a mermaid widget or changed the code inside one, re-init
-      const added = [...m.addedNodes].some(
-        n => n.nodeType === 1 && (n.matches?.('[data-mermaid-widget]') || n.querySelector?.('[data-mermaid-widget]'))
-      );
-      const isCodeChange = m.target?.matches?.('.mermaid-code') || m.target?.closest?.('[data-mermaid-widget]');
-      if (added || isCodeChange) {
-        scheduleInit(75);
-        break;
-      }
-    }
-  });
+  function startMermaidWidgets() {
+    initMermaidWidgets();
 
-  mo.observe(document.body, { childList: true, subtree: true, characterData: true });
+    if (window.__mermaidWidgetObserver || !document.body) {
+      return;
+    }
+
+    window.__mermaidWidgetObserver = new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        // If any mutation added a mermaid widget or changed the code inside one, re-init
+        const added = [...m.addedNodes].some(
+          n => n.nodeType === 1 && (n.matches?.('[data-mermaid-widget]') || n.querySelector?.('[data-mermaid-widget]'))
+        );
+        const isCodeChange = m.target?.matches?.('.mermaid-code') || m.target?.closest?.('[data-mermaid-widget]');
+        if (added || isCodeChange) {
+          scheduleInit(75);
+          break;
+        }
+      }
+    });
+
+    window.__mermaidWidgetObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
+  }
+
+  function bootMermaidWidgets() {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => startMermaidWidgets(), { once: true });
+    } else {
+      startMermaidWidgets();
+    }
+    requestAnimationFrame(() => scheduleInit(100));
+  }
+
+  bootMermaidWidgets();
+  document.addEventListener('astro:page-load', () => scheduleInit(50));
 
   if (window.apos?.bus?.$on) {
     // Fires when a modal opens (page editor, piece editor, etc.)
-    apos.bus.$on('modal-opened', () => scheduleInit(75));
+    window.apos.bus.$on('modal-opened', () => scheduleInit(75));
     // Fires when areas/widgets refresh after edits or insertions
-    apos.bus.$on('refreshed', () => scheduleInit(50));
+    window.apos.bus.$on('refreshed', () => scheduleInit(50));
   }
-
-  // (Optional) Fallback: run after the current tick to catch late DOM paint
-  requestAnimationFrame(() => scheduleInit(100));
 </script>

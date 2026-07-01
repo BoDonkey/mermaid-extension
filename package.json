@@ -1,22 +1,69 @@
 {
   "name": "@bodonkey/mermaid-extension",
-  "version": "1.0.0",
-  "description": "An extension to add the Mermaid diagram package to ApostropheCMS",
+  "version": "2.1.0",
+  "description": "Beautiful Mermaid diagrams for ApostropheCMS with full Astro frontend support",
   "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./astro": "./astro/index.js",
+    "./astro/MermaidWidget.astro": "./astro/MermaidWidget.astro"
+  },
+  "files": [
+    "index.js",
+    "modules/",
+    "astro/",
+    "images/",
+    "README.md",
+    "LICENSE.md"
+  ],
   "scripts": {
     "eslint": "eslint --ext .js,.vue .",
     "lint": "npm run eslint",
-    "test": "npm run lint && mocha"
+    "test": "npm run lint && mocha",
+    "build": "echo 'No build step required'",
+    "prepublishOnly": "npm run lint"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/BoDonkey/mermaid-extension.git"
   },
   "homepage": "https://github.com/BoDonkey/mermaid-extension#readme",
-  "author": "BoDonkey <robert@robertmeans.net>",
+  "bugs": {
+    "url": "https://github.com/BoDonkey/mermaid-extension/issues"
+  },
+  "author": {
+    "name": "BoDonkey",
+    "email": "robert.means1969@gmail.com",
+    "url": "https://github.com/BoDonkey"
+  },
   "license": "MIT",
+  "keywords": [
+    "apostrophecms",
+    "apostrophe",
+    "astro",
+    "mermaid",
+    "diagrams",
+    "flowchart",
+    "widget",
+    "cms",
+    "frontend"
+  ],
   "dependencies": {
     "ace-builds": "^1.32.3",
-    "mermaid": "^10.6.1"
-  }
+    "mermaid": "^11.9.0"
+  },
+  "devDependencies": {
+    "eslint": "^7.32.0",
+    "eslint-config-apostrophe": "^3.4.0",
+    "eslint-plugin-vue": "^9.33.0",
+    "mocha": "^11.7.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "browserslist": [
+    "defaults",
+    "not IE 11"
+  ]
 }

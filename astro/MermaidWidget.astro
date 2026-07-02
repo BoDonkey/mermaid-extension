@@ -3,6 +3,14 @@
  * Props:
  *  - widget: Apostrophe widget data, including mermaid and optional caption
  *  - initBlock: Mermaid directive prepended when the diagram has no directive
+ *
+ * Rendering is handled globally by astro/mermaid-init.client.js, which is
+ * loaded once per page via the `@bodonkey/mermaid-extension/astro/integration`
+ * Astro integration (see astro.config.mjs setup in the README). This
+ * component intentionally contains no inline <script>: a script embedded in
+ * this markup would never execute when ApostropheCMS's in-context editor
+ * inserts/refreshes it via `element.innerHTML = ...`, since browsers don't
+ * execute <script> tags inserted that way.
  */
 const { widget, initBlock = '' } = Astro.props;
 const uniqueId = `mermaid-widget-${Math.random().toString(36).slice(2)}`;
@@ -18,166 +26,3 @@ const uniqueId = `mermaid-widget-${Math.random().toString(36).slice(2)}`;
     <figcaption class="mermaid-widget__caption">{widget.caption}</figcaption>
   )}
 </figure>
-
-<script>
-  class MermaidWidgetRenderer {
-    constructor(container) {
-      this.container = container;
-      this.widgetId = container.dataset.widgetId;
-      this.target = container.querySelector('.mermaid-target');
-      this.codeEl = container.querySelector('.mermaid-code');
-      this.rendered = false;
-      this.CDN = 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js';
-    }
-
-    async ensureMermaid() {
-      if (window.mermaid) return window.mermaid;
-
-      if (!window.__mermaidWidgetLoader) {
-        window.__mermaidWidgetLoader = new Promise((resolve, reject) => {
-          const s = document.createElement('script');
-          s.src = this.CDN;
-          s.async = true;
-          s.onload = () => {
-            window.mermaid.initialize({
-              startOnLoad: false,
-              securityLevel: 'loose',
-              theme: 'default'
-            });
-            resolve(window.mermaid);
-          };
-          s.onerror = (e) => reject(e);
-          document.head.appendChild(s);
-        });
-      }
-
-      return window.__mermaidWidgetLoader;
-    }
-
-    async render() {
-      if (this.rendered) return;
-
-      try {
-        const mermaid = await this.ensureMermaid();
-        
-        this.target.style.visibility = 'hidden';
-        const id = 'mermaid-' + Math.random().toString(36).slice(2);
-        const src = this.applyInitBlock(this.codeEl.textContent || '');
-
-        // Render to a temporary container to catch error SVGs
-        const { svg } = await mermaid.render(id, src);
-        
-        // Check if the SVG contains error indicators
-        if (svg.includes('Syntax error') || svg.includes('Parse error')) {
-          this.target.innerHTML = '<div style="color:red;padding:10px;background:#ffe6e6;border:1px solid #ff0000;border-radius:4px;">Error rendering diagram. Please check your Mermaid syntax.</div>';
-        } else {
-          this.target.innerHTML = svg;
-        }
-        
-        // Clean up any error SVGs that Mermaid might have inserted elsewhere
-        document.querySelectorAll('svg[id^="d"]').forEach(svg => {
-          if (svg.querySelector('text')?.textContent?.includes('Syntax error')) {
-            svg.remove();
-          }
-        });
-      } catch (err) {
-        console.error('Mermaid rendering error:', err);
-        this.target.innerHTML = '<div style="color:red;padding:10px;background:#ffe6e6;border:1px solid #ff0000;border-radius:4px;">Error rendering diagram. Please check your Mermaid syntax.</div>';
-        
-        // Clean up any orphaned error SVGs
-        document.querySelectorAll('svg[id^="mermaid-"]').forEach(svg => {
-          if (!this.container.contains(svg)) {
-            svg.remove();
-          }
-        });
-      } finally {
-        this.target.style.visibility = 'visible';
-        this.rendered = true;
-      }
-    }
-
-    destroy() {
-      this.rendered = false;
-    }
-
-    applyInitBlock(source) {
-      const code = source.trim();
-      const init = (this.container.dataset.mermaidInit || '').trim();
-
-      if (!init || code.startsWith('%%{') || code.startsWith('---')) {
-        return code;
-      }
-
-      return `${init}\n${code}`;
-    }
-  }
-
-  const mermaidWidgets = window.__mermaidWidgets || new Map();
-  window.__mermaidWidgets = mermaidWidgets;
-
-  // Make init idempotent & debounced (DOM can churn a lot in the modal)
-  let initTimer = window.__mermaidWidgetInitTimer || null;
-  function scheduleInit(delay = 50) {
-    if (initTimer) clearTimeout(initTimer);
-    initTimer = setTimeout(initMermaidWidgets, delay);
-    window.__mermaidWidgetInitTimer = initTimer;
-  }
-
-  function initMermaidWidgets() {
-    // Reset any previous instances so re-renders are clean
-    mermaidWidgets.forEach(w => w.destroy());
-    mermaidWidgets.clear();
-
-    // (Re)discover and render all current widgets
-    document.querySelectorAll('[data-mermaid-widget]').forEach(container => {
-      const widgetId = container.dataset.widgetId;
-      if (!widgetId) return;
-      const w = new MermaidWidgetRenderer(container);
-      mermaidWidgets.set(widgetId, w);
-      w.render();
-    });
-  }
-
-  function startMermaidWidgets() {
-    initMermaidWidgets();
-
-    if (window.__mermaidWidgetObserver || !document.body) {
-      return;
-    }
-
-    window.__mermaidWidgetObserver = new MutationObserver((mutations) => {
-      for (const m of mutations) {
-        // If any mutation added a mermaid widget or changed the code inside one, re-init
-        const added = [...m.addedNodes].some(
-          n => n.nodeType === 1 && (n.matches?.('[data-mermaid-widget]') || n.querySelector?.('[data-mermaid-widget]'))
-        );
-        const isCodeChange = m.target?.matches?.('.mermaid-code') || m.target?.closest?.('[data-mermaid-widget]');
-        if (added || isCodeChange) {
-          scheduleInit(75);
-          break;
-        }
-      }
-    });
-
-    window.__mermaidWidgetObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
-  }
-
-  function bootMermaidWidgets() {
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => startMermaidWidgets(), { once: true });
-    } else {
-      startMermaidWidgets();
-    }
-    requestAnimationFrame(() => scheduleInit(100));
-  }
-
-  bootMermaidWidgets();
-  document.addEventListener('astro:page-load', () => scheduleInit(50));
-
-  if (window.apos?.bus?.$on) {
-    // Fires when a modal opens (page editor, piece editor, etc.)
-    window.apos.bus.$on('modal-opened', () => scheduleInit(75));
-    // Fires when areas/widgets refresh after edits or insertions
-    window.apos.bus.$on('refreshed', () => scheduleInit(50));
-  }
-</script>

@@ -63,6 +63,21 @@ const widgetComponents = {
 export default widgetComponents;
 ```
 
+**Required: register the integration.** Diagram rendering runs from a script that must load once, on every page — add the integration in `astro.config.mjs`:
+
+```javascript
+// astro.config.mjs
+import { defineConfig } from 'astro/config';
+import mermaidWidget from '@bodonkey/mermaid-extension/astro/integration';
+
+export default defineConfig({
+  integrations: [ mermaidWidget() ]
+  // ...your other config
+});
+```
+
+> **Why this is required:** ApostropheCMS's in-context editor inserts and refreshes widget markup by setting `element.innerHTML`. Browsers never execute `<script>` tags inserted that way, so a mermaid diagram added or edited in the editor would render only after a hard page reload. The integration injects the render script as part of Astro's normal page bundle instead of inline widget markup, so it's already loaded — and already listening for Apostrophe's `refreshed` event — before the editor ever touches the DOM. Without this integration, diagrams inserted via the in-context editor will not render until a full page reload.
+
 For Astro frontends, pass the same shared init block through a small wrapper component:
 
 ```astro
@@ -115,6 +130,8 @@ Rendered diagrams use semantic figure markup:
 #### Upgrade note
 
 If you styled earlier versions with selectors like `[data-mermaid-widget] > .mermaid`, update those selectors to use `.mermaid-widget`, `.mermaid-widget__canvas`, or `.mermaid-widget__caption`.
+
+**Astro projects:** as of this release, `MermaidWidget.astro` no longer contains its own inline render script. You must add the `mermaidWidget()` integration to `astro.config.mjs` (see the Astro setup above) or diagrams will stop rendering entirely. This is a required step, not an optional one.
 
 ### 🎨 What Can You Create?
 

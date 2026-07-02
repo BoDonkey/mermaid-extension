@@ -1,12 +1,14 @@
 {
   "name": "@bodonkey/mermaid-extension",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "description": "Beautiful Mermaid diagrams for ApostropheCMS with full Astro frontend support",
   "main": "index.js",
   "exports": {
     ".": "./index.js",
     "./astro": "./astro/index.js",
-    "./astro/MermaidWidget.astro": "./astro/MermaidWidget.astro"
+    "./astro/MermaidWidget.astro": "./astro/MermaidWidget.astro",
+    "./astro/integration": "./astro/integration.js",
+    "./astro/mermaid-init.client.js": "./astro/mermaid-init.client.js"
   },
   "files": [
     "index.js",

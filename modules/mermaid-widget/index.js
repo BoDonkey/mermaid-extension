@@ -8,7 +8,7 @@ module.exports = {
     width: 'half'
   },
   icons: {
-    'chart-icon': 'chartBar'
+    'chart-icon': 'ChartBar'
   },
   init(self) {
     self.addMermaidFieldType();

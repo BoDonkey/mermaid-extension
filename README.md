@@ -1,5 +1,9 @@
 # 🧜‍♀️ Mermaid Diagrams for ApostropheCMS + Astro
 
+
+>> Note: New projects should use `@bodonkey/mermaid-widget`, the one-module package. This package remains available for existing bundle-based installs.
+
+
 <div align="center">
   <img src="https://img.shields.io/badge/MADE%20FOR%20ApostropheCMS-000000.svg?style=for-the-badge&logo=Apostrophe&labelColor=6516dd" alt="Made for ApostropheCMS">
   <img src="https://img.shields.io/badge/ASTRO%20READY-FF5D01.svg?style=for-the-badge&logo=Astro&labelColor=000000" alt="Astro Ready">

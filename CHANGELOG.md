@@ -1,5 +1,23 @@
 # Changelog
 
+## 3.1.0 - 2026-07-11
+
+### Added
+
+* Added optional `semanticClassDefs` project configuration for injecting shared Mermaid `classDef` presets when diagrams reference semantic class names.
+* Added `injectSemanticClassDefs` to allow projects to opt out of semantic class definition injection.
+* Added the same semantic class injection path to Apostrophe editor preview, traditional widget rendering, and Astro rendering.
+
+### Changed
+
+* Mermaid source preparation now preserves existing `initBlock` behavior while appending only missing `classDef` lines for supported diagram types.
+
+## 3.0.1 - 2026-07-06
+
+### Fixed
+
+* Fixed icon capitalization issue that can break Linux installs (thanks to [Stuart Romanek](https://github.com/stuartromanek))
+
 ## 3.0.0 - 2026-07-02
 
 ### Fixed

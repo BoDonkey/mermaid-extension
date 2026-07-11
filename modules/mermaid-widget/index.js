@@ -5,6 +5,8 @@ module.exports = {
     icon: 'chart-icon',
     preview: false,
     initBlock: '',
+    injectSemanticClassDefs: true,
+    semanticClassDefs: {},
     width: 'half'
   },
   icons: {
@@ -21,6 +23,8 @@ module.exports = {
           label: 'Mermaid',
           help: 'Enter your mermaid code here',
           initBlock: self.options.initBlock,
+          injectSemanticClassDefs: self.options.injectSemanticClassDefs,
+          semanticClassDefs: self.options.semanticClassDefs,
           def: `graph TD
     A[Add your Mermaid diagram here]`
         },

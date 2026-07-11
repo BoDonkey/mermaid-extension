@@ -1,6 +1,6 @@
 {
   "name": "@bodonkey/mermaid-extension",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Beautiful Mermaid diagrams for ApostropheCMS with full Astro frontend support",
   "main": "index.js",
   "exports": {

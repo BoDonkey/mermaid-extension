@@ -1,5 +1,9 @@
 # 🧜‍♀️ Mermaid Diagrams for ApostropheCMS + Astro
 
+
+>> Note: New projects should use `@bodonkey/mermaid-widget`, the one-module package. This package remains available for existing bundle-based installs.
+
+
 <div align="center">
   <img src="https://img.shields.io/badge/MADE%20FOR%20ApostropheCMS-000000.svg?style=for-the-badge&logo=Apostrophe&labelColor=6516dd" alt="Made for ApostropheCMS">
   <img src="https://img.shields.io/badge/ASTRO%20READY-FF5D01.svg?style=for-the-badge&logo=Astro&labelColor=000000" alt="Astro Ready">
@@ -85,9 +89,18 @@ For Astro frontends, pass the same shared init block through a small wrapper com
 import MermaidWidget from '@bodonkey/mermaid-extension/astro/MermaidWidget.astro';
 
 const initBlock = '%%{init: { "theme": "base" }}%%';
+const semanticClassDefs = {
+  accent: 'fill:#f5f3ff,stroke:#7c3aed,color:#5b21b6',
+  info: 'fill:#eff6ff,stroke:#2563eb,color:#1d4ed8',
+  muted: 'fill:#fafafa,stroke:#d4d4d4,color:#737373,stroke-dasharray:5 5'
+};
 ---
 
-<MermaidWidget {...Astro.props} initBlock={initBlock} />
+<MermaidWidget
+  {...Astro.props}
+  initBlock={initBlock}
+  semanticClassDefs={semanticClassDefs}
+/>
 ```
 
 Then map your wrapper component in `src/widgets/index.js`.
@@ -227,6 +240,35 @@ Set `initBlock` on the `mermaid-widget` module to apply the same Mermaid directi
 ```
 
 If a diagram starts with its own Mermaid directive (`%%{...}%%`) or YAML frontmatter (`---`), that diagram keeps its own configuration.
+
+### Semantic Class Definitions
+
+Set `semanticClassDefs` on the `mermaid-widget` module to inject shared Mermaid `classDef` presets when a diagram references semantic classes. This lets authors write concise diagrams with `:::accent`, `:::info`, and similar class names without repeating the style block in every widget.
+
+```javascript
+'mermaid-widget': {
+  options: {
+    semanticClassDefs: {
+      info: 'fill:#eff6ff,stroke:#2563eb,color:#1d4ed8',
+      success: 'fill:#ecfdf5,stroke:#059669,color:#065f46',
+      warning: 'fill:#fefce8,stroke:#d97706,color:#713f12',
+      accent: 'fill:#f5f3ff,stroke:#7c3aed,color:#5b21b6',
+      muted: 'fill:#fafafa,stroke:#d4d4d4,color:#737373,stroke-dasharray:5 5'
+    }
+  }
+}
+```
+
+With those options, authors can write:
+
+```mermaid
+flowchart TB
+  platform["Your platform"]:::accent
+  note["Shared maintenance"]:::info
+  footer["Isolation guarantee"]:::muted
+```
+
+The extension appends only the missing `classDef` lines for referenced semantic classes. It skips duplicate definitions and only injects class definitions for Mermaid types where class styling applies cleanly, such as flowcharts, `graph`, and state diagrams.
 
 ## 🌟 Pro Tips
 

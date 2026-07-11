@@ -18,7 +18,43 @@
  *    is inserted through some other path that doesn't fire those events.
  */
 
+import { prepareMermaidSource } from '../modules/mermaid-widget/ui/src/prepare-source.mjs';
+
 const MERMAID_CDN = 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js';
+
+function parseJsonOption(value, fallback = {}) {
+  if (!value) {
+    return fallback;
+  }
+
+  try {
+    return JSON.parse(value);
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.warn('Invalid Mermaid widget JSON option:', e);
+    return fallback;
+  }
+}
+
+function getSemanticClassDefs(container) {
+  const semanticClassDefs = parseJsonOption(container.dataset.mermaidSemanticClassDefs);
+
+  Object.entries(container.dataset).forEach(([ key, value ]) => {
+    if (!key.startsWith('mermaidClassDef') || !value) {
+      return;
+    }
+
+    const className = key.slice('mermaidClassDef'.length);
+
+    if (!className) {
+      return;
+    }
+
+    semanticClassDefs[className.charAt(0).toLowerCase() + className.slice(1)] = value;
+  });
+
+  return semanticClassDefs;
+}
 
 class MermaidWidgetRenderer {
   constructor(container) {
@@ -68,7 +104,7 @@ class MermaidWidgetRenderer {
 
       this.target.style.visibility = 'hidden';
       const id = 'mermaid-' + Math.random().toString(36).slice(2);
-      const src = this.applyInitBlock(this.codeEl.textContent || '');
+      const src = this.prepareSource(this.codeEl.textContent || '');
 
       // Render to a temporary container to catch error SVGs
       const { svg } = await mermaid.render(id, src);
@@ -107,15 +143,12 @@ class MermaidWidgetRenderer {
     this.rendered = false;
   }
 
-  applyInitBlock(source) {
-    const code = source.trim();
-    const init = (this.container.dataset.mermaidInit || '').trim();
-
-    if (!init || code.startsWith('%%{') || code.startsWith('---')) {
-      return code;
-    }
-
-    return `${init}\n${code}`;
+  prepareSource(source) {
+    return prepareMermaidSource(source, {
+      initBlock: this.container.dataset.mermaidInit,
+      injectSemanticClassDefs: this.container.dataset.mermaidInjectSemanticClassDefs !== 'false',
+      semanticClassDefs: getSemanticClassDefs(this.container)
+    });
   }
 }
 

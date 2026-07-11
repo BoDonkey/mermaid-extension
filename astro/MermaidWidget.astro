@@ -3,6 +3,7 @@
  * Props:
  *  - widget: Apostrophe widget data, including mermaid and optional caption
  *  - initBlock: Mermaid directive prepended when the diagram has no directive
+ *  - semanticClassDefs: optional classDef presets injected when referenced
  *
  * Rendering is handled globally by astro/mermaid-init.client.js, which is
  * loaded once per page via the `@bodonkey/mermaid-extension/astro/integration`
@@ -12,11 +13,24 @@
  * inserts/refreshes it via `element.innerHTML = ...`, since browsers don't
  * execute <script> tags inserted that way.
  */
-const { widget, initBlock = '' } = Astro.props;
+const {
+  widget,
+  initBlock = '',
+  injectSemanticClassDefs = true,
+  semanticClassDefs = {}
+} = Astro.props;
 const uniqueId = `mermaid-widget-${Math.random().toString(36).slice(2)}`;
+const semanticClassDefsJson = JSON.stringify(semanticClassDefs);
 ---
 
-<figure class="mermaid-widget" data-mermaid-widget data-widget-id={uniqueId} data-mermaid-init={initBlock}>
+<figure
+  class="mermaid-widget"
+  data-mermaid-widget
+  data-widget-id={uniqueId}
+  data-mermaid-init={initBlock}
+  data-mermaid-inject-semantic-class-defs={injectSemanticClassDefs ? 'true' : 'false'}
+  data-mermaid-semantic-class-defs={semanticClassDefsJson}
+>
   <!-- Keep raw source hidden; render SVG into .mermaid-target -->
   <pre class="mermaid-code" style="display:none;">{widget.mermaid}</pre>
   <div class="mermaid-widget__canvas">

@@ -1,5 +1,13 @@
 {% if data.widget.mermaid %}
-<figure class="mermaid-widget" data-mermaid-widget data-mermaid-init="{{ data.options.initBlock | e }}">
+<figure
+  class="mermaid-widget"
+  data-mermaid-widget
+  data-mermaid-init="{{ data.options.initBlock | e }}"
+  data-mermaid-inject-semantic-class-defs="{% if data.options.injectSemanticClassDefs == false %}false{% else %}true{% endif %}"
+  {% for className, style in data.options.semanticClassDefs %}
+    data-mermaid-class-def-{{ className | e }}="{{ style | e }}"
+  {% endfor %}
+>
   <div class="mermaid-widget__canvas">
     <div class="mermaid">{{ data.widget.mermaid }}</div>
   </div>

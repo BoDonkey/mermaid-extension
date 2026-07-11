@@ -45,6 +45,7 @@ import ace from 'ace-builds/src-noconflict/ace';
 import 'ace-builds/src-noconflict/mode-plain_text';
 import 'ace-builds/src-noconflict/theme-monokai';
 import AposInputMixin from 'Modules/@apostrophecms/schema/mixins/AposInputMixin';
+import { prepareMermaidSource } from '../../src/prepare-source.mjs';
 
 const mermaidCdn = 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js';
 let mermaidPromise;
@@ -132,14 +133,11 @@ export default {
   },
   methods: {
     applyInitBlock(value) {
-      const code = (value || '').trim();
-      const init = (this.field.initBlock || '').trim();
-
-      if (!init || code.startsWith('%%{') || code.startsWith('---')) {
-        return code;
-      }
-
-      return `${init}\n${code}`;
+      return prepareMermaidSource(value, {
+        initBlock: this.field.initBlock,
+        injectSemanticClassDefs: this.field.injectSemanticClassDefs,
+        semanticClassDefs: this.field.semanticClassDefs
+      });
     },
     validate(value) {
       if (this.field.required) {
